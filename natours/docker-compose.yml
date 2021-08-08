@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  natours-mongodb:
+    image: mongo
+    container_name: natours-mongodb
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - natours-network
+
+  # natours-adminer:
+  #   image: adminer:latest
+  #   container_name: natours-adminer
+  #   environment:
+  #     ADMIN_DEFAULT_SERVER: natours-mongodb
+  #     ADMINER_DESIGN: ng9
+  #   ports:
+  #     - '10004:8080'
+  #   networks:
+  #     - natours-network
+  #   depends_on:
+  #     - natours-mongodb
+
+networks:
+  natours-network:
+    driver: bridge
+
+volumes:
+  mongodata:
+    driver: local

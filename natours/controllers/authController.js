@@ -5,6 +5,7 @@ const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
+const filterObj = require('../utils/filterObject');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -12,25 +13,38 @@ const signToken = (id) =>
   });
 
 const createSendToken = (user, statusCode, res) => {
-  const filteredUser = { _id: user._id, name: user.name, email: user.email };
+  const token = signToken(user._id);
+
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+  };
+  if (process.env.NODE_ENV === 'production') {
+    cookieOptions.secure = true;
+  }
+
+  res.cookie('jwt', token, cookieOptions);
   res.status(statusCode).json({
     status: 'success',
     data: {
-      user: filteredUser,
+      user: filterObj(user, '_id', 'name', 'email'),
     },
-    token: signToken(user._id),
+    token,
   });
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
-  const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-    passwordChangedAt: req.body.passwordChangedAt,
-  });
-
+  const newUser = await User.create(
+    filterObj(
+      req.body,
+      'name',
+      'email',
+      'password',
+      'passwordConfirm',
+      'passwordChangedAt'
+    )
+  );
   createSendToken(newUser, 201, res);
 });
 
@@ -134,7 +148,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       message: 'Token sent to email!',
     });
   } catch (err) {
-    console.log(err);
     user.passwordResetToken = undefined;
     user.passwordResetExpired = undefined;
     await user.save({ validateBeforeSave: false });
@@ -148,7 +161,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  console.log(req.params.token);
   // 1) Get user based on the token
   const hashedToken = crypto
     .createHash('sha256')

@@ -8,6 +8,5 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 8000
-ENV NODE_ENV=production
+EXPOSE 80
 CMD [ "node", "server.js" ]

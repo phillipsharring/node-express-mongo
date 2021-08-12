@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Tour = require('../../models/tourModel');
 
-dotenv.config({ path: './config.env' });
+dotenv.config({ path: './.env' });
 
 const PASS = encodeURIComponent(process.env.DATABASE_PASSWORD);
 const DB = process.env.DATABASE.replace('<PASSWORD>', PASS);
@@ -16,13 +16,11 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => console.log('DB connection successful!'))
-  .catch((err) => {
+  .catch(() => {
     console.log('DB connection failed');
   });
 
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
-);
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
 const importData = async () => {
   try {

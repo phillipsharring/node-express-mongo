@@ -13,14 +13,14 @@ router
     reviewController.createReview
   );
 
-// router
-//   .route('/:id')
-//   .get(reviewController.getReview)
-//   .patch(reviewController.updateReview)
-//   .delete(
-//     authController.protect,
-//     authController.restrictTo('admin'),
-//     reviewController.deleteReview
-//   );
+router
+  .route('/:id')
+  //   .get(reviewController.getReview)
+  //   .patch(reviewController.updateReview)
+  .delete(
+    //     authController.protect,
+    //     authController.restrictTo('admin'),
+    reviewController.deleteReview
+  );
 
 module.exports = router;
